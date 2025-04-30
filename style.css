@@ -1,0 +1,86 @@
+/* 전체 배경 */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e8f5e9; /* 연한 녹색 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* 컨테이너 */
+.container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 320px;
+    text-align: center;
+}
+
+/* 제목 */
+h1 {
+    color: #388e3c; /* 진한 녹색 */
+}
+
+/* 입력 필드 & 버튼 */
+.input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #81c784;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #66bb6a; /* 버튼 녹색 */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #4caf50;
+}
+
+/* 할 일 목록 스타일 */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #c8e6c9;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.todo-item.completed span {
+    text-decoration: line-through;
+    color: #666;
+}
+
+/* 삭제 버튼 */
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #d32f2f;
+}
+.delete-btn:hover {
+    color: #b71c1c;
+}
