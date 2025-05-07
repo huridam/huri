@@ -1,74 +1,64 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const inputField = document.getElementById("todo-input");
-    const addButton = document.getElementById("add-btn");
-    const todoList = document.getElementById("todo-list");
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+const chatbox = document.getElementById('chatbox');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
 
-    // 🟢 로컬 저장소에서 저장된 할 일 불러오기
-    const loadTodos = () => {
-        const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
-        savedTodos.forEach(todo => addTodo(todo.text, todo.completed));
-    };
-
-    // 🟢 할 일 추가 함수
-    const addTodo = (text, completed = false) => {
-        if (!text.trim()) return;
-
-        const li = document.createElement("li");
-        li.classList.add("todo-item");
-        
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = completed;
-        checkbox.addEventListener("change", () => {
-            saveTodos();
-            li.classList.toggle("completed", checkbox.checked);
-        });
-
-        const span = document.createElement("span");
-        span.textContent = text;
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "❌";
-        deleteBtn.classList.add("delete-btn");
-        deleteBtn.addEventListener("click", () => {
-            li.remove();
-            saveTodos();
-        });
-
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(deleteBtn);
-        todoList.appendChild(li);
-
-        saveTodos();
-    };
-
-    // 🟢 할 일 저장 함수 (로컬 저장소)
-    const saveTodos = () => {
-        const todos = [];
-        document.querySelectorAll(".todo-item").forEach(li => {
-            todos.push({
-                text: li.querySelector("span").textContent,
-                completed: li.querySelector("input").checked
-            });
-        });
-        localStorage.setItem("todos", JSON.stringify(todos));
-    };
-
-    // 🟢 추가 버튼 클릭 시 할 일 추가
-    addButton.addEventListener("click", () => {
-        addTodo(inputField.value);
-        inputField.value = "";
+// GPT에게 요리 레시피 프롬프트로 전달
+async function fetchGPTResponse(prompt) {
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ "role": "user", "content": prompt }],
+        temperature: 0.7,
+      }),
     });
 
-    // 🟢 Enter 키 입력 시 할 일 추가
-    inputField.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-            addTodo(inputField.value);
-            inputField.value = "";
-        }
-    });
+    if (!response.ok) throw new Error(`응답 오류: ${response.status}`);
 
-    // 🟢 페이지 로드 시 저장된 할 일 불러오기
-    loadTodos();
+    const data = await response.json();
+    return data.choices[0].message.content;
+
+  } catch (err) {
+    console.error("API 요청 실패:", err);
+    return "죄송합니다. 레시피를 불러오는 데 실패했습니다.";
+  }
+}
+
+// 메시지 전송 동작 함수
+async function handleSend() {
+  const ingredients = userInput.value.trim();
+  if (!ingredients) return;
+
+  // 사용자 입력 출력
+  chatbox.innerHTML += `<div class="text-right mb-2 text-blue-600">나: ${ingredients}</div>`;
+  userInput.value = '';
+  chatbox.scrollTop = chatbox.scrollHeight;
+
+  // GPT에게 보낼 프롬프트 구성
+  const prompt = `다음 재료를 활용한 간단한 한식 요리 레시피를 하나 추천해줘. 
+레시피 이름과 필요한 재료, 간단한 조리법을 포함해줘.
+재료: ${ingredients}`;
+
+  const reply = await fetchGPTResponse(prompt);
+
+  // GPT 응답 출력
+  chatbox.innerHTML += `<div class="text-left mb-2 text-gray-800">GPT: ${reply}</div>`;
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// 버튼 클릭 시 전송
+sendBtn.addEventListener('click', handleSend);
+
+// 엔터 키로도 전송 가능하게
+userInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    handleSend();
+  }
 });
